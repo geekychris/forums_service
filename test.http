@@ -1,0 +1,116 @@
+###
+
+# curl -v -X POST
+#  -H "Content-Type: application/json"
+#  -d '{"username":"testuser","password":"testpassword123","email":"test@example.com","displayName":"Test User"}'
+#  http://localhost:8080/api/auth/register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "chriscollins",
+  "password": "12345678",
+  "email": "chris@hitorro.com",
+  "displayName": "Chris"
+}
+
+
+
+
+###
+
+# curl -X POST http://localhost:8080/api/auth/register
+#  -H "Content-Type: application/json"
+#  -d '{
+#    "username": "johndoe",
+#    "password": "password123",
+#    "email": "john@example.com",
+#    "displayName": "John Doe"
+#  }'
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "password": "password123",
+  "email": "john@example.com",
+  "displayName": "John Doe"
+}
+
+###
+
+
+# curl -X POST http://localhost:8080/api/auth/login
+#  -H "Content-Type: application/json"
+#  -d '{
+#    "username": "johndoe",
+#    "password": "password123"
+#  }'
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "password": "password123"
+}
+
+###
+
+
+# curl -X POST http://localhost:8080/api/forums
+#  -H "Content-Type: application/json"
+#  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+#  -d '{
+#    "name": "Technology",
+#    "description": "Discussions about technology"
+#  }'
+POST http://localhost:8080/api/forums
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "name": "Technology",
+  "description": "Discussions about technology"
+}
+
+###
+
+# curl -X POST http://localhost:8080/api/posts
+#  -H "Content-Type: application/json"
+#  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+#  -d '{
+#    "title": "Hello World",
+#    "content": "This is my first post!",
+#    "forumId": 1
+#  }'
+POST http://localhost:8080/api/posts
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Hello World",
+  "content": "This is my first post!",
+  "forumId": 1
+}
+
+###
+
+
+# curl -X POST http://localhost:8080/api/forums
+#  -H "Content-Type: application/json"
+#  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+#  -d '{
+#    "name": "Technology",
+#    "description": "Discussions about technology"
+#  }'
+POST http://localhost:8080/api/forums
+Authorization:  eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJqb2huZG9lIiwicm9sZXMiOiJST0xFX1VTRVIiLCJpYXQiOjE3NDU3NzQzMDYsImV4cCI6MTc0NTg2MDcwNn0.tzM7MNXucaqe9LEWiDAEfK8pfoOhdECULo4hIuUsvvddKc85m4DZKNAMQZbj4FJz
+Content-Type: application/json
+
+{
+  "name": "Technology",
+  "description": "Discussions about technology"
+}
+
+###
+

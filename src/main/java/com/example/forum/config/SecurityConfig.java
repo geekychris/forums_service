@@ -60,11 +60,20 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // H2 console for development
                         .requestMatchers(HttpMethod.GET, "/api/forums").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/forums/{id}").permitAll()
+                        
+                        // GraphQL endpoints
                         .requestMatchers("/graphql").permitAll() // GraphQL endpoint
                         .requestMatchers("/graphiql").permitAll() // GraphiQL UI
                         .requestMatchers("/graphiql/**").permitAll() // GraphiQL resources
                         
-                        // Secured endpoints
+                        // Swagger/OpenAPI endpoints
+                        .requestMatchers("/swagger-ui/**").permitAll() // Swagger UI
+                        .requestMatchers("/swagger-ui.html").permitAll() // Swagger UI HTML
+                        .requestMatchers("/v3/api-docs/**").permitAll() // OpenAPI docs
+                        .requestMatchers("/swagger-resources/**").permitAll() // Swagger resources
+                        .requestMatchers("/swagger-config/**").permitAll() // Swagger config
+                        .requestMatchers("/webjars/**").permitAll() // WebJars used by Swagger
+                        
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/moderator/**").hasAnyRole("ADMIN", "MODERATOR")
                         

@@ -80,7 +80,6 @@
             <scope>provided</scope>
         </dependency>
 
-
         <!-- JWT Support -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -104,6 +103,11 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
             <version>2.2.0</version>
         </dependency>
         
@@ -148,9 +152,33 @@
                             <version>1.18.30</version>
                         </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <fork>true</fork>
                 </configuration>
+            </plugin>
+            
+            <!-- Explicit Lombok annotation processor -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>add-delombok-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/delombok</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 </project>
-

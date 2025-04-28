@@ -3,6 +3,7 @@ package com.example.forum.cli;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Main application class for the Forum CLI client.
@@ -10,6 +11,12 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@ComponentScan(basePackages = {
+    "com.example.forum.cli", 
+    "com.example.forum.cli.commands", 
+    "com.example.forum.cli.config",
+    "com.example.forum.cli.services"
+})
 public class ForumCliApplication {
     /**
      * Main entry point for the application.

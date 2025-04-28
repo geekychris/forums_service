@@ -4,22 +4,21 @@ import com.example.forum.cli.model.authentication.AuthResponse;
 import com.example.forum.cli.services.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.shell.command.annotation.Command;
-import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
-@Command(group = "Authentication")
 @RequiredArgsConstructor
 public class AuthCommands {
 
     private final AuthService authService;
     private final ObjectMapper objectMapper;
 
-    @Command(command = "login", description = "Login to the forum API")
+    @ShellMethod(value = "Login to the forum API", key = "login")
     public String login(
-            @Option(longNames = "username", shortNames = 'u', description = "Your username", required = true) String username,
-            @Option(longNames = "password", shortNames = 'p', description = "Your password", required = true) String password) {
+            @ShellOption(help = "Your username") String username,
+            @ShellOption(help = "Your password") String password) {
         try {
             AuthResponse response = authService.login(username, password);
             if (response != null && response.getAccessToken() != null) {
@@ -34,12 +33,12 @@ public class AuthCommands {
         }
     }
 
-    @Command(command = "register", description = "Register a new user account")
+    @ShellMethod(value = "Register a new user account", key = "register")
     public String register(
-            @Option(longNames = "username", shortNames = 'u', description = "Username", required = true) String username,
-            @Option(longNames = "email", shortNames = 'e', description = "Email address", required = true) String email,
-            @Option(longNames = "password", shortNames = 'p', description = "Password", required = true) String password,
-            @Option(longNames = "display-name", shortNames = 'd', description = "Display name") String displayName) {
+            @ShellOption(help = "Username") String username,
+            @ShellOption(help = "Email address") String email,
+            @ShellOption(help = "Password") String password,
+            @ShellOption(help = "Display name", defaultValue = ShellOption.NULL) String displayName) {
         try {
             Object response = authService.register(username, email, password, displayName);
             return "Registration successful. You can now login.";
@@ -48,13 +47,13 @@ public class AuthCommands {
         }
     }
 
-    @Command(command = "logout", description = "Logout and remove stored authentication token")
+    @ShellMethod(value = "Logout and remove stored authentication token", key = "logout")
     public String logout() {
         authService.logout();
         return "Logged out successfully.";
     }
 
-    @Command(command = "whoami", description = "Display current user information")
+    @ShellMethod(value = "Display current user information", key = "whoami")
     public String whoami() {
         try {
             Object userInfo = authService.getCurrentUser();

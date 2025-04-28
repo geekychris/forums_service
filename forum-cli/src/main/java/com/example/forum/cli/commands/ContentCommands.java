@@ -3,23 +3,21 @@ package com.example.forum.cli.commands;
 import com.example.forum.cli.services.ContentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.shell.command.annotation.Command;
+import java.io.File;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellComponent;
-import java.io.File;
-
+import org.springframework.shell.standard.ShellMethod;
 /**
  * Commands for content management (uploading files, listing attachments, etc.)
  */
-@ShellComponent
-@Command(group = "Content")
+@ShellComponent("content")
 @RequiredArgsConstructor
 public class ContentCommands {
 
     private final ContentService contentService;
     private final ObjectMapper objectMapper;
 
-    @Command(command = "post-upload", description = "Upload content to a post")
+    @ShellMethod(value = "Upload content to a post", key = "post-upload")
     public String uploadToPost(
             @Option(longNames = "post-id", shortNames = 'p', description = "Post ID", required = true) Long postId,
             @Option(longNames = "file", shortNames = 'f', description = "File path", required = true) String filePath,
@@ -39,8 +37,7 @@ public class ContentCommands {
             return "Failed to upload content: " + e.getMessage();
         }
     }
-    
-    @Command(command = "comment-upload", description = "Upload content to a comment")
+    @ShellMethod(value = "Upload content to a comment", key = "comment-upload")
     public String uploadToComment(
             @Option(longNames = "comment-id", shortNames = 'c', description = "Comment ID", required = true) Long commentId,
             @Option(longNames = "file", shortNames = 'f', description = "File path", required = true) String filePath,
@@ -61,7 +58,7 @@ public class ContentCommands {
         }
     }
     
-    @Command(command = "post-content-list", description = "List content for a post")
+    @ShellMethod(value = "List content for a post", key = "post-list")
     public String getPostContent(
             @Option(longNames = "post-id", shortNames = 'p', description = "Post ID", required = true) Long postId) {
         try {
@@ -72,7 +69,7 @@ public class ContentCommands {
         }
     }
     
-    @Command(command = "comment-content-list", description = "List content for a comment")
+    @ShellMethod(value = "List content for a comment", key = "comment-list")
     public String getCommentContent(
             @Option(longNames = "comment-id", shortNames = 'c', description = "Comment ID", required = true) Long commentId) {
         try {
@@ -83,7 +80,7 @@ public class ContentCommands {
         }
     }
     
-    @Command(command = "content-delete", description = "Delete content")
+    @ShellMethod(value = "Delete content", key = "delete")
     public String deleteContent(
             @Option(longNames = "content-id", shortNames = 'i', description = "Content ID", required = true) Long contentId) {
         try {

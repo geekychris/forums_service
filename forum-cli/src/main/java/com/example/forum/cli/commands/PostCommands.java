@@ -3,19 +3,20 @@ package com.example.forum.cli.commands;
 import com.example.forum.cli.services.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
 
-@ShellComponent
-@Command(group = "Posts")
+/**
+ * Shell commands for post operations.
+ */
+@ShellComponent("post")
 @RequiredArgsConstructor
 public class PostCommands {
-
     private final PostService postService;
     private final ObjectMapper objectMapper;
 
-    @Command(command = "post-create", description = "Create a new post in a forum")
+    @ShellMethod(value = "Create a new post in a forum", key = "create")
     public String createPost(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) String forumId,
             @Option(longNames = "title", shortNames = 't', description = "Post title", required = true) String title,
@@ -29,7 +30,7 @@ public class PostCommands {
         }
     }
     
-    @Command(command = "post-list", description = "List posts in a forum")
+    @ShellMethod(value = "List posts in a forum", key = "list")
     public String listPosts(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) String forumId,
             @Option(longNames = "page", shortNames = 'p', description = "Page number (0-based)", defaultValue = "0") int page,
@@ -42,7 +43,7 @@ public class PostCommands {
         }
     }
     
-    @Command(command = "post-get", description = "Get post details by ID")
+    @ShellMethod(value = "Get post details by ID", key = "get")
     public String getPost(
             @Option(longNames = "id", shortNames = 'i', description = "Post ID", required = true) String id) {
         try {
@@ -53,7 +54,7 @@ public class PostCommands {
         }
     }
     
-    @Command(command = "post-update", description = "Update a post")
+    @ShellMethod(value = "Update a post", key = "update")
     public String updatePost(
             @Option(longNames = "id", shortNames = 'i', description = "Post ID", required = true) String id,
             @Option(longNames = "title", shortNames = 't', description = "New post title") String title,
@@ -67,7 +68,7 @@ public class PostCommands {
         }
     }
     
-    @Command(command = "post-delete", description = "Delete a post")
+    @ShellMethod(value = "Delete a post", key = "delete")
     public String deletePost(
             @Option(longNames = "id", shortNames = 'i', description = "Post ID", required = true) String id) {
         try {
@@ -78,7 +79,7 @@ public class PostCommands {
         }
     }
     
-    @Command(command = "user-posts", description = "List posts by a specific user")
+    @ShellMethod(value = "List posts by a specific user", key = "user-list")
     public String getUserPosts(
             @Option(longNames = "user-id", shortNames = 'u', description = "User ID", required = true) String userId,
             @Option(longNames = "page", shortNames = 'p', description = "Page number (0-based)", defaultValue = "0") int page,

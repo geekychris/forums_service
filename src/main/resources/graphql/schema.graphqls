@@ -1,26 +1,33 @@
+scalar DateTime
+scalar Long
+
 type Post {
-    id: ID!
+    id: Long!
     title: String!
     content: String!
     author: User!
-    createdAt: String!
-    updatedAt: String!
+    forum: Forum!
+    createdAt: DateTime!
+    updatedAt: DateTime!
     comments: [Comment]
 }
 
 type User {
-    id: ID!
+    id: Long!
     username: String!
     email: String!
     posts: [Post]
 }
 
 type Comment {
-    id: ID!
+    id: Long!
     content: String!
     author: User!
     post: Post!
-    createdAt: String!
+    parentComment: Comment
+    replies: [Comment]
+    createdAt: DateTime!
+    updatedAt: DateTime
 }
 
 type PostPage {
@@ -33,15 +40,51 @@ type PostPage {
     hasPrevious: Boolean!
 }
 
+type Forum {
+    id: Long!
+    name: String!
+    description: String
+    posts: [Post]
+    createdAt: DateTime!
+    updatedAt: DateTime
+}
+
+type CommentPage {
+    content: [Comment]!
+    totalElements: Int!
+    totalPages: Int!
+    size: Int!
+    number: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
 type Query {
-    posts(forumId: ID!, page: Int = 0, size: Int = 10): PostPage!
-    post(id: ID!): Post
-    userPosts(authorId: ID!, page: Int = 0, size: Int = 10): PostPage!
+    posts(forumId: Long!, page: Int = 0, size: Int = 10): PostPage!
+    post(id: Long!): Post
+    userPosts(authorId: Long!, page: Int = 0, size: Int = 10): PostPage!
+    forums: [Forum]!
+    forum(id: Long!): Forum
+    
+    comment(id: Long!): Comment
+    postComments(postId: Long!, page: Int = 0, size: Int = 10): CommentPage!
+    commentReplies(commentId: Long!, page: Int = 0, size: Int = 10): CommentPage!
+    userComments(authorId: Long!, page: Int = 0, size: Int = 10): CommentPage!
 }
 
 type Mutation {
-    createPost(title: String!, content: String!, forumId: ID!): Post!
-    updatePost(id: ID!, title: String, content: String): Post!
-    deletePost(id: ID!): Boolean!
+    createPost(title: String!, content: String!, forumId: Long!): Post!
+    updatePost(id: Long!, title: String, content: String): Post!
+    deletePost(id: Long!): Boolean!
+    createForum(name: String!, description: String): Forum!
+    updateForum(id: Long!, name: String, description: String): Forum!
+    deleteForum(id: Long!): Boolean!
+    
+    createComment(postId: Long!, content: String!): Comment!
+    createReply(parentCommentId: Long!, content: String!): Comment!
+    updateComment(id: Long!, content: String!): Comment!
+    deleteComment(id: Long!): Boolean!
+    upvoteComment(id: Long!): Comment!
+    downvoteComment(id: Long!): Comment!
 }
 

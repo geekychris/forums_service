@@ -1,5 +1,6 @@
 package com.example.forum.graphql;
 
+import com.example.forum.model.Forum;
 import com.example.forum.model.Post;
 import com.example.forum.model.User;
 import com.example.forum.repository.UserRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -50,39 +52,60 @@ public class PostResolver {
     }
 
     @QueryMapping
-    public Page<Post> posts(@Argument String forumId, @Argument int page, @Argument int size) {
-        return postService.getPostsByForum(Long.parseLong(forumId), getCurrentUserId(), PageRequest.of(page, size));
+    public Page<Post> posts(@Argument Long forumId, @Argument int page, @Argument int size) {
+        return postService.getPostsByForum(forumId, getCurrentUserId(), PageRequest.of(page, size));
     }
 
     @QueryMapping
-    public Post post(@Argument String id) {
-        return postService.getPostById(Long.parseLong(id), getCurrentUserId());
+    public Post post(@Argument Long id) {
+        return postService.getPostById(id, getCurrentUserId());
     }
 
     @QueryMapping
-    public Page<Post> userPosts(@Argument String authorId, @Argument int page, @Argument int size) {
-        return postService.getPostsByUser(Long.parseLong(authorId), getCurrentUserId(), PageRequest.of(page, size));
+    public Page<Post> userPosts(@Argument Long authorId, @Argument int page, @Argument int size) {
+        return postService.getPostsByUser(authorId, getCurrentUserId(), PageRequest.of(page, size));
     }
 
     @MutationMapping
     public Post createPost(
             @Argument String title,
             @Argument String content,
-            @Argument String forumId) {
-        return postService.createPost(title, content, Long.parseLong(forumId), getCurrentUserId());
+            @Argument Long forumId) {
+        return postService.createPost(title, content, forumId, getCurrentUserId());
     }
 
     @MutationMapping
     public Post updatePost(
-            @Argument String id,
+            @Argument Long id,
             @Argument String title,
             @Argument String content) {
-        return postService.updatePost(Long.parseLong(id), title, content, getCurrentUserId());
+        return postService.updatePost(id, title, content, getCurrentUserId());
     }
 
     @MutationMapping
-    public boolean deletePost(@Argument String id) {
-        postService.deletePost(Long.parseLong(id), getCurrentUserId());
+    public boolean deletePost(@Argument Long id) {
+        postService.deletePost(id, getCurrentUserId());
         return true;
+    }
+    // Field resolvers
+    
+    @SchemaMapping(typeName = "Post", field = "author")
+    public User author(Post post) {
+        return post.getUser();
+    }
+    
+    @SchemaMapping(typeName = "Post", field = "forum")
+    public Forum forum(Post post) {
+        return post.getForum();
+    }
+    
+    @SchemaMapping(typeName = "PostPage", field = "hasNext")
+    public boolean hasNext(Page<Post> postPage) {
+        return postPage.hasNext();
+    }
+    
+    @SchemaMapping(typeName = "PostPage", field = "hasPrevious")
+    public boolean hasPrevious(Page<Post> postPage) {
+        return postPage.hasPrevious();
     }
 }

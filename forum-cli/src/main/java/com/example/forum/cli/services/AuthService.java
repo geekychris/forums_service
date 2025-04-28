@@ -25,23 +25,41 @@ public class AuthService {
 
     private final WebClient webClient;
 
+    @Value("${forum.api.base-url}")
+    private String baseUrl;
+
+    @Value("${forum.api.auth-path}")
+    private String authPath;
+
     @Value("${forum.auth.token-file}")
     private String tokenFilePath;
-
     public AuthResponse login(String username, String password) {
         AuthRequest request = AuthRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
+        String uriPath = authPath + "/login";
+        log.debug("Sending login request to: {}{}", baseUrl, uriPath);
+        log.info("Attempting to login with username: {}", username);
 
         AuthResponse response = webClient.post()
-                .uri("/api/auth/login")
+                .uri(uriPath)
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AuthResponse.class)
                 .onErrorResume(WebClientResponseException.class, e -> {
+                    log.error("Login request to {} failed with status: {}", baseUrl + uriPath, e.getStatusCode());
+                    
                     if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                         log.error("Authentication failed: Invalid credentials");
+                    } else if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                        log.error("Authentication failed: Access denied");
+                    } else if (e.getStatusCode() == HttpStatus.METHOD_NOT_ALLOWED) {
+                        log.error("API error: Method not allowed. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
+                    } else if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        log.error("API error: Endpoint not found. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
                     } else {
                         log.error("Login error: {} - {}", e.getStatusCode(), e.getMessage());
                     }
@@ -51,7 +69,6 @@ public class AuthService {
 
         if (response != null && response.getAccessToken() != null) {
             saveToken(response.getAccessToken());
-            log.info("Login successful. Token saved.");
         }
 
         return response;
@@ -65,14 +82,33 @@ public class AuthService {
                 .displayName(displayName)
                 .build();
 
+        String uriPath = authPath + "/register";
+        log.debug("Sending registration request to: {}{}", baseUrl, uriPath);
+        log.info("Attempting to register user: {}", username);
+
         return webClient.post()
-                .uri("/api/auth/register")
+                .uri(uriPath)
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(Object.class)
                 .onErrorResume(WebClientResponseException.class, e -> {
+                    log.error("Registration request to {} failed with status: {}", baseUrl + uriPath, e.getStatusCode());
+                    String responseBody = e.getResponseBodyAsString();
+                    log.debug("Response body: {}", responseBody);
+                    
                     if (e.getStatusCode() == HttpStatus.CONFLICT) {
                         log.error("Registration failed: Username or email already exists");
+                    } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                        log.error("API error: Authentication required. The forum service requires authentication for registration.");
+                        log.error("Check if registration endpoint is correctly configured in the forum service.");
+                    } else if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                        log.error("API error: Access denied. The forum service is denying access to the registration endpoint.");
+                    } else if (e.getStatusCode() == HttpStatus.METHOD_NOT_ALLOWED) {
+                        log.error("API error: Method not allowed. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
+                    } else if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        log.error("API error: Endpoint not found. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
                     } else {
                         log.error("Registration error: {} - {}", e.getStatusCode(), e.getMessage());
                     }
@@ -82,12 +118,33 @@ public class AuthService {
     }
 
     public Object getCurrentUser() {
+        String uriPath = authPath + "/me";
+        log.debug("Sending current user request to: {}{}", baseUrl, uriPath);
+
         return webClient.get()
-                .uri("/api/auth/me")
+                .uri(uriPath)
                 .retrieve()
                 .bodyToMono(Object.class)
+                .onErrorResume(WebClientResponseException.class, e -> {
+                    log.error("Current user request to {} failed with status: {}", baseUrl + uriPath, e.getStatusCode());
+                    
+                    if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                        log.error("Not authenticated: Please login first");
+                    } else if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                        log.error("Access denied: Insufficient permissions");
+                    } else if (e.getStatusCode() == HttpStatus.METHOD_NOT_ALLOWED) {
+                        log.error("API error: Method not allowed. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
+                    } else if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        log.error("API error: Endpoint not found. Try changing forum.api.auth-path in application.properties");
+                        log.error("Tried path: {}", uriPath);
+                    } else {
+                        log.error("Error fetching current user: {}", e.getMessage());
+                    }
+                    return Mono.empty();
+                })
                 .onErrorResume(e -> {
-                    log.error("Error fetching current user: {}", e.getMessage());
+                    log.error("General error fetching current user: {}", e.getMessage());
                     return Mono.empty();
                 })
                 .block();

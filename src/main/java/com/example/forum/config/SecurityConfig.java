@@ -69,10 +69,14 @@ public class SecurityConfig {
                         // Swagger/OpenAPI endpoints
                         .requestMatchers("/swagger-ui/**").permitAll() // Swagger UI
                         .requestMatchers("/swagger-ui.html").permitAll() // Swagger UI HTML
+                        .requestMatchers("/swagger-ui/index.html").permitAll() // Swagger UI index
+                        .requestMatchers("/swagger-ui/swagger-ui/**").permitAll() // Nested Swagger UI resources
                         .requestMatchers("/v3/api-docs/**").permitAll() // OpenAPI docs
+                        .requestMatchers("/v3/api-docs/swagger-config").permitAll() // OpenAPI swagger config
                         .requestMatchers("/swagger-resources/**").permitAll() // Swagger resources
                         .requestMatchers("/swagger-config/**").permitAll() // Swagger config
                         .requestMatchers("/webjars/**").permitAll() // WebJars used by Swagger
+                        .requestMatchers("/favicon.ico").permitAll() // Favicon
                         
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/moderator/**").hasAnyRole("ADMIN", "MODERATOR")

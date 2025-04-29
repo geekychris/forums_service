@@ -80,7 +80,7 @@ public class ContentCommands {
         }
     }
     
-    @ShellMethod(value = "Delete content", key = "delete")
+    @ShellMethod(value = "Delete content", key = "content-delete")
     public String deleteContent(
             @Option(longNames = "content-id", shortNames = 'i', description = "Content ID", required = true) Long contentId) {
         try {

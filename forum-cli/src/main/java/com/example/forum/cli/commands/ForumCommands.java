@@ -16,7 +16,7 @@ public class ForumCommands {
     private final ForumService forumService;
     private final ObjectMapper objectMapper;
 
-    @ShellMethod(value = "Create a new forum", key = "create")
+    @ShellMethod(value = "Create a new forum", key = "forum-create")
     public String createForum(
             @Option(longNames = "name", shortNames = 'n', description = "Forum name", required = true) String name,
             @Option(longNames = "description", shortNames = 'd', description = "Forum description", required = true) String description) {
@@ -29,7 +29,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "List all root forums", key = "list")
+    @ShellMethod(value = "List all root forums", key = "forum-list")
     public String listForums() {
         try {
             Object response = forumService.getRootForums();
@@ -39,7 +39,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Get forum details by ID", key = "get")
+    @ShellMethod(value = "Get forum details by ID", key = "forum-get")
     public String getForum(
             @Option(longNames = "id", shortNames = 'i', description = "Forum ID", required = true) Long id) {
         try {
@@ -50,7 +50,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Update a forum", key = "update")
+    @ShellMethod(value = "Update a forum", key = "forum-update")
     public String updateForum(
             @Option(longNames = "id", shortNames = 'i', description = "Forum ID", required = true) Long id,
             @Option(longNames = "name", shortNames = 'n', description = "New forum name") String name,
@@ -64,7 +64,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Delete a forum", key = "delete")
+    @ShellMethod(value = "Delete a forum", key = "forum-delete")
     public String deleteForum(
             @Option(longNames = "id", shortNames = 'i', description = "Forum ID", required = true) Long id) {
         try {
@@ -100,7 +100,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Search forums by name", key = "search")
+    @ShellMethod(value = "Search forums by name", key = "forum-search")
     public String searchForums(
             @Option(longNames = "query", shortNames = 'q', description = "Search query", required = true) String query) {
         try {
@@ -111,7 +111,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Move a forum to a new parent or to root level", key = "move")
+    @ShellMethod(value = "Move a forum to a new parent or to root level", key = "forum-move")
     public String moveForum(
             @Option(longNames = "id", shortNames = 'i', description = "Forum ID to move", required = true) Long id,
             @Option(longNames = "parent-id", shortNames = 'p', description = "New parent forum ID (omit for root level)") Long parentId) {
@@ -124,7 +124,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Grant a user access to a forum", key = "access-grant")
+    @ShellMethod(value = "Grant a user access to a forum", key = "forum-access-grant")
     public String grantAccess(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) Long forumId,
             @Option(longNames = "user-id", shortNames = 'u', description = "User ID", required = true) Long userId,
@@ -137,7 +137,7 @@ public class ForumCommands {
         }
     }
     
-    @ShellMethod(value = "Revoke a user's access to a forum", key = "access-revoke")
+    @ShellMethod(value = "Revoke a user's access to a forum", key = "forum-access-revoke")
     public String revokeAccess(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) Long forumId,
             @Option(longNames = "user-id", shortNames = 'u', description = "User ID", required = true) Long userId) {

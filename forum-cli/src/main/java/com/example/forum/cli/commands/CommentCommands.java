@@ -17,7 +17,7 @@ public class CommentCommands {
     private final CommentService commentService;
     private final ObjectMapper objectMapper;
 
-    @ShellMethod(value = "Create a new comment on a post", key = "create")
+    @ShellMethod(value = "Create a new comment on a post", key = "comment-create")
     public String createComment(
             @Option(longNames = "post-id", shortNames = 'p', description = "Post ID", required = true) Long postId,
             @Option(longNames = "content", shortNames = 'c', description = "Comment content", required = true) String content) {
@@ -30,7 +30,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Reply to an existing comment", key = "reply")
+    @ShellMethod(value = "Reply to an existing comment", key = "comment-reply")
     public String createReply(
             @Option(longNames = "comment-id", shortNames = 'c', description = "Parent comment ID", required = true) Long commentId,
             @Option(longNames = "content", shortNames = 't', description = "Reply content", required = true) String content) {
@@ -43,7 +43,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Get a comment by ID", key = "get")
+    @ShellMethod(value = "Get a comment by ID", key = "comment-get")
     public String getComment(
             @Option(longNames = "id", shortNames = 'i', description = "Comment ID", required = true) Long id) {
         try {
@@ -54,7 +54,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Update a comment", key = "update")
+    @ShellMethod(value = "Update a comment", key = "comment-update")
     public String updateComment(
             @Option(longNames = "id", shortNames = 'i', description = "Comment ID", required = true) Long id,
             @Option(longNames = "content", shortNames = 'c', description = "New content", required = true) String content) {
@@ -67,7 +67,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Delete a comment", key = "delete")
+    @ShellMethod(value = "Delete a comment", key = "comment-delete")
     public String deleteComment(
             @Option(longNames = "id", shortNames = 'i', description = "Comment ID", required = true) Long id) {
         try {
@@ -78,7 +78,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "List comments for a post", key = "list")
+    @ShellMethod(value = "List comments for a post", key = "comment-list")
     public String listComments(
             @Option(longNames = "post-id", shortNames = 'p', description = "Post ID", required = true) Long postId,
             @Option(longNames = "page", shortNames = 'n', description = "Page number", defaultValue = "0") int page,
@@ -91,7 +91,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "List replies to a comment", key = "reply-list")
+    @ShellMethod(value = "List replies to a comment", key = "comment-reply-list")
     public String listReplies(
             @Option(longNames = "comment-id", shortNames = 'c', description = "Comment ID", required = true) Long commentId,
             @Option(longNames = "page", shortNames = 'n', description = "Page number", defaultValue = "0") int page,
@@ -104,7 +104,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Upvote a comment", key = "upvote")
+    @ShellMethod(value = "Upvote a comment", key = "comment-upvote")
     public String upvoteComment(
             @Option(longNames = "id", shortNames = 'i', description = "Comment ID", required = true) Long id) {
         try {
@@ -115,7 +115,7 @@ public class CommentCommands {
         }
     }
 
-    @ShellMethod(value = "Downvote a comment", key = "downvote")
+    @ShellMethod(value = "Downvote a comment", key = "comment-downvote")
     public String downvoteComment(
             @Option(longNames = "id", shortNames = 'i', description = "Comment ID", required = true) Long id) {
         try {

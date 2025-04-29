@@ -16,7 +16,7 @@ public class PostCommands {
     private final PostService postService;
     private final ObjectMapper objectMapper;
 
-    @ShellMethod(value = "Create a new post in a forum", key = "create")
+    @ShellMethod(value = "Create a new post in a forum", key = "post-create")
     public String createPost(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) String forumId,
             @Option(longNames = "title", shortNames = 't', description = "Post title", required = true) String title,
@@ -30,7 +30,7 @@ public class PostCommands {
         }
     }
     
-    @ShellMethod(value = "List posts in a forum", key = "list")
+    @ShellMethod(value = "List posts in a forum", key = "post-list")
     public String listPosts(
             @Option(longNames = "forum-id", shortNames = 'f', description = "Forum ID", required = true) String forumId,
             @Option(longNames = "page", shortNames = 'p', description = "Page number (0-based)", defaultValue = "0") int page,
@@ -43,7 +43,7 @@ public class PostCommands {
         }
     }
     
-    @ShellMethod(value = "Get post details by ID", key = "get")
+    @ShellMethod(value = "Get post details by ID", key = "post-get")
     public String getPost(
             @Option(longNames = "id", shortNames = 'i', description = "Post ID", required = true) String id) {
         try {

@@ -58,7 +58,7 @@ public class CommentController {
      *
      * @param createCommentRequest the comment creation request
      * @return the created comment
-    @PostMapping
+     */
     @PostMapping
     @Operation(summary = "Create a new comment")
     @ApiResponses(value = {

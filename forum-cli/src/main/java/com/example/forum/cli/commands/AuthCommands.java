@@ -4,6 +4,7 @@ import com.example.forum.cli.model.authentication.AuthResponse;
 import com.example.forum.cli.services.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -17,8 +18,11 @@ public class AuthCommands {
 
     @ShellMethod(value = "Login to the forum API", key = "login")
     public String login(
-            @ShellOption(help = "Your username") String username,
-            @ShellOption(help = "Your password") String password) {
+//            @ShellOption(help = "Your username") String username,
+//            @ShellOption(help = "Your password") String password
+            @Option(longNames = "username", shortNames = 'u', description = "username", required = true) String username,
+            @Option(longNames = "password", shortNames = 'f', description = "Forum ID", required = true) String password
+    ) {
         try {
             AuthResponse response = authService.login(username, password);
             if (response != null && response.getAccessToken() != null) {

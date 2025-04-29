@@ -15,7 +15,7 @@ public class ApiProperties {
     /**
      * Base URL for the Forum API
      */
-    private String baseUrl = "http://localhost:8080";
+    private String baseUrl = "http://localhost:8081/api";
     
     /**
      * GraphQL endpoint URL

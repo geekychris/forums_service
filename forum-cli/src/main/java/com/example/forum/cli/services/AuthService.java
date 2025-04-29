@@ -25,7 +25,7 @@ public class AuthService {
 
     private final WebClient webClient;
 
-    @Value("${forum.api.base-url}")
+    @Value("${forum.api.base-url}/api")
     private String baseUrl;
 
     @Value("${forum.api.auth-path}")
@@ -43,7 +43,7 @@ public class AuthService {
         log.info("Attempting to login with username: {}", username);
 
         AuthResponse response = webClient.post()
-                .uri(uriPath)
+                .uri(baseUrl+uriPath)
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AuthResponse.class)

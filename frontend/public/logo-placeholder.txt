@@ -1,0 +1,25 @@
+This is a placeholder for the logo files.
+
+To create proper logo files:
+
+1. For favicon.ico:
+   - Create a 16x16 or 32x32 pixel icon file
+   - You can use online tools like favicon.io
+
+2. For logo192.png:
+   - Create a 192x192 pixel PNG file
+   - Use your application's logo
+
+3. For logo512.png:
+   - Create a 512x512 pixel PNG file
+   - Use your application's logo
+
+You can use any image editing software or online tools to create these files.
+
+Alternatively, you can download placeholder images from:
+- https://placehold.co/192x192
+- https://placehold.co/512x512
+
+For the time being, the React application will run, but you'll see 404 errors
+in the console for the missing image files.
+

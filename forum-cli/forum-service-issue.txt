@@ -1,0 +1,7 @@
+The forum service appears to be misconfigured. It's requiring authentication for the registration endpoint (/auth/register), which should be publicly accessible. Please check the forum service's Spring Security configuration and ensure it allows public access to authentication endpoints. Common fixes:
+
+1. Add .permitAll() for /auth/register in SecurityFilterChain
+2. Check SecurityFilterChain order (authentication endpoints should be configured before protected routes)
+3. Verify the forum service is running with the correct security configuration
+
+Once the forum service is properly configured, the forum-cli should work correctly with the current settings.

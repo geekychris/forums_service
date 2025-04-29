@@ -1,0 +1,48 @@
+1745815752281:register --username myuser --email user@example.com --password mypassword --display-name "My User"
+1745816628811:auth register --username myuser --email user@example.com --password mypassword --display-name "My User"
+1745817035409:register --username myuser --email user@example.com --password mypassword --display-name "My User"
+1745817082190:auth register -u myuser -e user@example.com -p mypassword -d "My User"
+1745817137691:auth register --username myuser --email user@example.com --password mypassword --displayName "My User"
+1745817192411:register myuser user@example.com mypassword "My User"
+1745817192628:login myuser mypassword
+1745817192635:whoami
+1745817738693:register --username myuser --email user@example.com --password mypassword --display-name "My User"
+1745817826805:register --username myuser --email user@example.com --password mypassword --displayName "My User"
+1745943143225:login -u johndoe -p password123
+1745943177271:login -username johndoe -password password123
+1745943274515:login -u johndoe -p password123
+1745943744699:login --username johndoe --password password123
+1745951304546:login --username johndoe --password 123
+1745951374560:login --username johndoe --password password123
+1745954691957:forum-list
+1745954718989:forum list
+1745954731259:forum-list
+1745954770737:login --username johndoe --password password123
+1745954799164:list
+1745955263747:forum-listForums
+1745955269937:forum-listforums
+1745955275550:forum-list
+1745955282603:help
+1745955299913:whoami
+1745955320619:login --user johndoe --password password123
+1745955335014:login --username johndoe --password password123
+1745955337795:whomai
+1745955343684:login-whomai
+1745955347894:help
+1745955355112:whoami
+1745955648174:help
+1745955655775:search
+1745955683293:list
+1745955978673:login --username johndoe --password password123
+1745955985412:help
+1745955995102:forum-list
+1745956009901:forum-get
+1745956015334:forum-get id=1
+1745956024373:forum-get id="1"
+1745956061625:forum-get id=1;
+1745956075432:forum-get id="1"
+1745956119284:forum -get --id 1
+1745956136410:forum-get -i 1
+1745956144634:forum-get --i 1
+1745956155106:forum-get --id 1
+1745956164556:history

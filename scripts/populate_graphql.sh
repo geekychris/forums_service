@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Base URL for the API
-BASE_URL="http://localhost:8080"
+BASE_URL="http://localhost:9090"
 GRAPHQL_URL="$BASE_URL/graphql"
 
 # Colors for output

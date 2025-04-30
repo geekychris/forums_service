@@ -14,6 +14,33 @@ import {
   authUtils
 } from '../types';
 
+// Define API URL constants in one place for consistency
+const API_HOST = 'http://localhost:9090';
+const API_BASE_URL = `${API_HOST}/api`;
+
+// Debug flag to enable verbose token logging
+const DEBUG_TOKEN = true;
+// Type for server file upload response
+interface FileUploadResponse {
+  url: string;
+  filename?: string;
+  size?: number;
+}
+// Type guard to validate if response is a valid AuthResponse
+function isAuthResponse(response: any): response is AuthResponse {
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    (typeof response.token === 'string' || typeof response.accessToken === 'string') &&
+    typeof response.username === 'string'
+  );
+}
+
+// Type guard to validate if a value is a string
+function isString(value: any): value is string {
+  return typeof value === 'string';
+}
+
 class ApiClient {
   private client: AxiosInstance;
   private token: string | null = null;
@@ -21,18 +48,25 @@ class ApiClient {
   constructor() {
     // Initialize from localStorage if token exists
     this.token = localStorage.getItem('token');
-    console.log('[API] Constructor - Initial token exists:', this.token !== null);
+    if (DEBUG_TOKEN) {
+      console.log('[API] Constructor - Initial token exists:', this.token !== null);
+      if (this.token) {
+        console.log('[API] Token from localStorage:', this.token.substring(0, 15) + '...');
+        console.log('[API] Token length:', this.token.length);
+        console.log('[API] Token format appears JWT-like:', this.token.split('.').length === 3);
+      }
+    }
     
     this.client = axios.create({
-      baseURL: 'http://localhost:8080',
+      baseURL: API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
       },
       // Add CORS support
-      withCredentials: true,
+      withCredentials: false,
     });
     
-    console.log('[API] Created API client with baseURL: http://localhost:8080');
+    console.log(`[API] Created API client with baseURL: ${API_BASE_URL}`);
     
     // Note: The backend needs proper CORS configuration in:
     // com.example.forum.config.WebConfig and
@@ -291,16 +325,112 @@ class ApiClient {
     // Add request interceptor to handle auth
     this.client.interceptors.request.use(
       (config: any) => {
-        // Log request details
-        console.log(`[API] Request: ${config.method?.toUpperCase()} ${config.url}`);
+        // Log complete request details
+        const fullRequestUrl = `${config.baseURL}${config.url}`;
+        console.log(`[API] Full request URL: ${fullRequestUrl}`);
+        
+        if (DEBUG_TOKEN) {
+          // Verify token in memory matches localStorage
+          const storedToken = localStorage.getItem('token');
+          const tokenMatch = this.token === storedToken;
+          
+          console.log('[API] Token verification before request:', {
+            memoryTokenExists: this.token !== null,
+            localStorageTokenExists: storedToken !== null,
+            tokensMatch: tokenMatch,
+            memoryTokenLength: this.token ? this.token.length : 0,
+            storedTokenLength: storedToken ? storedToken.length : 0
+          });
+          
+          if (!tokenMatch && storedToken) {
+            console.warn('[API] Token mismatch! Synchronizing with localStorage');
+            this.token = storedToken;
+          }
+        }
+        
+        console.log('[API] Request details:', {
+          url: config.url,
+          method: config.method?.toUpperCase(),
+          baseURL: config.baseURL,
+          tokenExists: this.token !== null,
+          tokenFirstChars: this.token ? this.token.substring(0, 10) + '...' : 'none'
+        });
+        
+        // Log headers separately for better visibility
+        console.log('[API] Request headers:', JSON.stringify(config.headers, null, 2));
         
         if (this.token) {
           // Always use 'Bearer' as the token type since that's what the backend expects
-          config.headers.Authorization = `Bearer ${this.token}`;
-          console.log('[API] Adding Authorization header:', 
-            config.headers.Authorization.substring(0, 20) + '...');
+          const authHeader = `Bearer ${this.token}`;
+          
+          // Set both variations to handle case-sensitivity
+          config.headers['Authorization'] = authHeader;
+          config.headers['authorization'] = authHeader;
+          
+          console.log('[API] Authorization header set:', authHeader.substring(0, 20) + '...');
+          console.log('[API] Auth header length:', authHeader.length);
+          
+          // Verify the header was actually set in the config
+          if (DEBUG_TOKEN) {
+            const headerSet = config.headers.Authorization === authHeader;
+            console.log('[API] Authorization header verification:', {
+              headerSet: headerSet,
+              headerLength: config.headers.Authorization ? config.headers.Authorization.length : 0
+            });
+          }
         } else {
-          console.log('[API] Request without auth token');
+          console.warn('[API] No token available for request');
+          
+          // Check if we should have a token (localStorage has one but class instance doesn't)
+          const storedToken = localStorage.getItem('token');
+          if (storedToken) {
+            console.error('[API] Token exists in localStorage but not in memory! Restoring...');
+            this.token = storedToken;
+            config.headers.Authorization = `Bearer ${this.token}`;
+            console.log('[API] Authorization header recovered from localStorage');
+          }
+        }
+        
+        // Add detailed header debugging
+        if (DEBUG_TOKEN) {
+          const fullHeaders = Object.entries(config.headers).reduce((acc, [key, value]) => {
+            acc[key] = typeof value === 'string' && key.toLowerCase() === 'authorization' 
+              ? value.substring(0, 20) + '...' 
+              : value;
+            return acc;
+          }, {} as Record<string, any>);
+          
+          console.log('[API] Full request headers:', fullHeaders);
+          
+          // Verify Authorization header is properly set
+          const hasAuth = 'authorization' in config.headers || 'Authorization' in config.headers;
+          const authHeader = config.headers.authorization || config.headers.Authorization;
+          console.log('[API] Authorization header check:', {
+            headerExists: hasAuth,
+            headerIsString: typeof authHeader === 'string',
+            headerStartsWithBearer: authHeader?.startsWith('Bearer '),
+            headerLength: authHeader?.length
+          });
+        }
+        
+        // Add specific token validation before request is sent
+        if (DEBUG_TOKEN) {
+          const hasAuthHeader = 'Authorization' in config.headers;
+          const authHeader = config.headers.Authorization;
+          
+          console.log('[API] Final request verification:', {
+            url: config.url,
+            hasAuthHeader,
+            authHeaderType: typeof authHeader,
+            headerFormat: authHeader ? authHeader.substring(0, 'Bearer '.length + 10) + '...' : 'none',
+            contentType: config.headers['Content-Type'],
+            originalToken: this.token ? this.token.substring(0, 10) + '...' : 'none'
+          });
+
+          // Verify Bearer format
+          if (authHeader && !authHeader.startsWith('Bearer ')) {
+            console.error('[API] Authorization header does not start with "Bearer "');
+          }
         }
         
         return config;
@@ -357,24 +487,79 @@ class ApiClient {
 
   // Set token and persist to localStorage
   setToken(token: string) {
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+      console.error('[API] Invalid token provided to setToken:', token);
+      return;
+    }
+    
     console.log('[API] Setting token:', token.substring(0, 15) + '...');
+    
+    // Validate token format (basic check for JWT format)
+    const tokenParts = token.split('.');
+    const isJwtFormat = tokenParts.length === 3;
+    
+    if (DEBUG_TOKEN) {
+      console.log('[API] Token validation:', {
+        length: token.length,
+        appearsToBeBearerToken: token.startsWith('Bearer '),
+        appearsToBeJWT: isJwtFormat,
+        parts: tokenParts.length
+      });
+      
+      if (!isJwtFormat) {
+        console.warn('[API] Token does not appear to be in JWT format (should have 3 parts separated by dots)');
+      }
+      
+      // If it starts with Bearer, remove it
+      if (token.startsWith('Bearer ')) {
+        console.warn('[API] Token includes "Bearer " prefix, removing...');
+        token = token.substring(7);
+      }
+    }
+    
     this.token = token;
-    localStorage.setItem('token', token);
+    
+    try {
+      localStorage.setItem('token', token);
+      console.log('[API] Token saved to localStorage, length:', token.length);
+      
+      // Verify it was saved correctly
+      const storedToken = localStorage.getItem('token');
+      if (storedToken !== token) {
+        console.error('[API] Token verification failed! Stored token does not match memory token');
+      } else {
+        console.log('[API] Token verification successful - localStorage and memory match');
+      }
+    } catch (e) {
+      console.error('[API] Failed to save token to localStorage:', e);
+    }
   }
 
   // Clear token from memory and localStorage
   clearToken() {
     console.log('[API] Clearing token');
     this.token = null;
-    localStorage.removeItem('token');
+    try {
+      localStorage.removeItem('token');
+      
+      // Verify token was removed
+      const tokenAfterRemoval = localStorage.getItem('token');
+      if (tokenAfterRemoval) {
+        console.error('[API] Failed to remove token from localStorage!');
+      } else {
+        console.log('[API] Token successfully removed from localStorage');
+      }
+    } catch (e) {
+      console.error('[API] Error while removing token from localStorage:', e);
+    }
   }
 
   async login(data: LoginRequest): Promise<AuthResponse> {
     console.log('[API] Login attempt with username:', data.username);
     
     try {
-      console.log('[API] Sending login request to: /api/auth/login');
-      const response = await this.client.post('http://localhost:9090/api/auth/login', data);
+      console.log('[API] Sending login request to: /auth/login');
+      const response = await this.client.post<AuthResponse>('/auth/login', data);
       
       // Log entire response for debugging
       console.log('[API] Login response:', {
@@ -389,8 +574,14 @@ class ApiClient {
         throw new Error('No data received from server');
       }
       
+      // Validate the response data is a proper AuthResponse
+      if (!isAuthResponse(response.data)) {
+        console.error('[API] Invalid auth response format:', response.data);
+        throw new Error('Invalid authentication response format');
+      }
+      
       // Extract token from response - backend sends as accessToken
-      const token = response.data.accessToken;
+      const token = response.data.accessToken || response.data.token;
       if (!token) {
         console.error('[API] No token in response data:', response.data);
         throw new Error('No token received from server');
@@ -400,6 +591,44 @@ class ApiClient {
       
       // Store the token
       this.setToken(token);
+      
+      // Verify token was properly stored
+      console.log('[API] Post-login token verification:', {
+        inMemory: this.token ? this.token.substring(0, 15) + '...' : 'none',
+        inStorage: localStorage.getItem('token')?.substring(0, 15) + '...' || 'none',
+        headerInConfig: isString(this.client.defaults.headers.common['Authorization']) 
+          ? this.client.defaults.headers.common['Authorization'].substring(0, 20) + '...' 
+          : 'none'
+      });
+      
+      // Verify token storage and header setup
+      const storedToken = localStorage.getItem('token');
+      const authHeader = this.client.defaults.headers.common['Authorization'];
+      const verificationResult = {
+        tokenSet: this.token === token,
+        tokenInStorage: storedToken === token,
+        authHeaderSet: isString(authHeader) ? authHeader.startsWith('Bearer ') : false,
+        authHeaderComplete: authHeader === `Bearer ${token}`
+      };
+      console.log('[API] Post-login verification:', verificationResult);
+      
+      if (!verificationResult.tokenSet || !verificationResult.tokenInStorage || !verificationResult.authHeaderSet) {
+        console.error('[API] Login succeeded but token setup failed:', verificationResult);
+        // Force token synchronization
+        if (token) {
+          this.setToken(token);  // Try setting token again
+          
+          // Explicitly set the Authorization header
+          this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          
+          // Verify one more time
+          console.log('[API] Token re-verification after force sync:', {
+            inMemory: this.token === token,
+            inStorage: localStorage.getItem('token') === token,
+            headerSet: this.client.defaults.headers.common['Authorization'] === `Bearer ${token}`
+          });
+        }
+      }
       
       // Construct and return the auth response
       const authResponse: AuthResponse = {
@@ -443,18 +672,34 @@ class ApiClient {
   }
   
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await this.client.post<AuthResponse>('/api/auth/register', data);
-    const token = authUtils.getToken(response.data);
-    if (token) {
-      this.setToken(token);
+    try {
+      const response = await this.client.post<AuthResponse>('/auth/register', data);
+      
+      // Validate response data
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
+      if (!isAuthResponse(response.data)) {
+        console.error('[API] Invalid auth response format from register:', response.data);
+        throw new Error('Invalid authentication response format');
+      }
+      
+      const token = authUtils.getToken(response.data);
+      if (token) {
+        this.setToken(token);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('[API] Registration error:', error);
+      throw error;
     }
-    return response.data;
   }
   
   async logout(): Promise<void> {
     try {
       // Call the backend logout endpoint if it exists
-      await this.client.post('/api/auth/logout');
+      await this.client.post('/auth/logout');
     } catch (error) {
       // If the endpoint doesn't exist or fails, just continue
       console.log('Logout endpoint not available or failed');
@@ -466,7 +711,7 @@ class ApiClient {
   async getCurrentUser(): Promise<User> {
     console.log('[API] Fetching current user, token exists:', this.token !== null);
     try {
-      const response = await this.client.get<User>('/api/auth/me');
+      const response = await this.client.get<User>('/auth/me');
       console.log('[API] Current user fetched successfully:', response.data.username);
       return response.data;
     } catch (error) {
@@ -479,7 +724,7 @@ class ApiClient {
   async getForums(): Promise<Forum[]> {
     console.log('[API] Fetching forums list');
     try {
-      const response = await this.client.get<Forum[]>('/api/forums');
+      const response = await this.client.get<Forum[]>('/forums');
       console.log('[API] Fetched forums successfully, count:', response.data.length);
       return response.data;
     } catch (error) {
@@ -491,7 +736,7 @@ class ApiClient {
   async getForum(id: number): Promise<Forum> {
     console.log(`[API] Fetching forum details for id: ${id}`);
     try {
-      const response = await this.client.get<Forum>(`/api/forums/${id}`);
+      const response = await this.client.get<Forum>(`/forums/${id}`);
       console.log('[API] Fetched forum successfully:', response.data.name);
       return response.data;
     } catch (error) {
@@ -503,7 +748,7 @@ class ApiClient {
   async createForum(data: CreateForumRequest): Promise<Forum> {
     console.log('[API] Creating new forum:', data.name);
     try {
-      const response = await this.client.post<Forum>('/api/forums', data);
+      const response = await this.client.post<Forum>('/forums', data);
       console.log('[API] Forum created successfully:', response.data.id);
       return response.data;
     } catch (error) {
@@ -515,8 +760,39 @@ class ApiClient {
   // Posts API
   async getPosts(forumId: number, page = 0, size = 10): Promise<PageResponse<Post>> {
     console.log(`[API] Fetching posts for forum ${forumId}, page ${page}`);
+    
+    // Check token and authorization state before making request
+    // Check token and authorization state before making request
+    const storedToken = localStorage.getItem('token');
+    const authHeader = this.client.defaults.headers.common['Authorization'];
+    
+    console.log('[API] getPosts request check:', {
+      hasToken: this.token !== null,
+      tokenFirstChars: this.token ? this.token.substring(0, 15) + '...' : 'none',
+      headerPresent: 'Authorization' in this.client.defaults.headers.common,
+      headerValue: isString(this.client.defaults.headers.common['Authorization']) 
+        ? this.client.defaults.headers.common['Authorization'].substring(0, 20) + '...' 
+        : 'none',
+      tokenInStorage: !!storedToken,
+      tokenMatchesStorage: this.token === storedToken,
+      authHeaderValid: isString(authHeader) ? authHeader.startsWith('Bearer ') : false
+    });
+    // If token exists in storage but not in memory or headers, restore it
+    if (storedToken && (!this.token || !authHeader)) {
+      console.warn('[API] Token found in localStorage but not in memory/headers! Restoring...');
+      this.token = storedToken;
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+    }
+    
     try {
-      const response = await this.client.get<PageResponse<Post>>(`/api/posts?forumId=${forumId}&page=${page}&size=${size}`);
+      const response = await this.client.get<PageResponse<Post>>(`/posts?forumId=${forumId}&page=${page}&size=${size}`);
+      
+      // Validate response data has the expected structure
+      if (!response.data || !Array.isArray(response.data.content)) {
+        console.error('[API] Invalid page response format:', response.data);
+        throw new Error('Invalid page response format');
+      }
+      
       console.log('[API] Fetched posts successfully, count:', response.data.content.length);
       return response.data;
     } catch (error) {
@@ -528,7 +804,7 @@ class ApiClient {
   async getPost(id: number): Promise<Post> {
     console.log(`[API] Fetching post details for id: ${id}`);
     try {
-      const response = await this.client.get<Post>(`/api/posts/${id}`);
+      const response = await this.client.get<Post>(`/posts/${id}`);
       console.log('[API] Fetched post successfully');
       return response.data;
     } catch (error) {
@@ -540,7 +816,7 @@ class ApiClient {
   async createPost(data: CreatePostRequest): Promise<Post> {
     console.log('[API] Creating new post in forum:', data.forumId);
     try {
-      const response = await this.client.post<Post>('/api/posts', data);
+      const response = await this.client.post<Post>('/posts', data);
       console.log('[API] Post created successfully:', response.data.id);
       return response.data;
     } catch (error) {
@@ -552,7 +828,7 @@ class ApiClient {
   async updatePost(id: number, data: Partial<CreatePostRequest>): Promise<Post> {
     console.log(`[API] Updating post with id: ${id}`);
     try {
-      const response = await this.client.put<Post>(`/api/posts/${id}`, data);
+      const response = await this.client.put<Post>(`/posts/${id}`, data);
       console.log('[API] Post updated successfully');
       return response.data;
     } catch (error) {
@@ -564,7 +840,7 @@ class ApiClient {
   async deletePost(id: number): Promise<boolean> {
     console.log(`[API] Deleting post with id: ${id}`);
     try {
-      const response = await this.client.delete<boolean>(`/api/posts/${id}`);
+      const response = await this.client.delete<boolean>(`/posts/${id}`);
       console.log('[API] Post deleted successfully');
       return response.data;
     } catch (error) {
@@ -577,7 +853,14 @@ class ApiClient {
   async getPostComments(postId: number, page = 0, size = 10): Promise<PageResponse<Comment>> {
     console.log(`[API] Fetching comments for post ${postId}, page ${page}`);
     try {
-      const response = await this.client.get<PageResponse<Comment>>(`/api/comments?postId=${postId}&page=${page}&size=${size}`);
+      const response = await this.client.get<PageResponse<Comment>>(`/comments?postId=${postId}&page=${page}&size=${size}`);
+      
+      // Validate response data has the expected structure
+      if (!response.data || !Array.isArray(response.data.content)) {
+        console.error('[API] Invalid page response format for comments:', response.data);
+        throw new Error('Invalid page response format for comments');
+      }
+      
       console.log('[API] Fetched comments successfully, count:', response.data.content.length);
       return response.data;
     } catch (error) {
@@ -589,7 +872,7 @@ class ApiClient {
   async createComment(data: CreateCommentRequest): Promise<Comment> {
     console.log('[API] Creating new comment on post:', data.postId);
     try {
-      const response = await this.client.post<Comment>('/api/comments', data);
+      const response = await this.client.post<Comment>('/comments', data);
       console.log('[API] Comment created successfully');
       return response.data;
     } catch (error) {
@@ -601,7 +884,7 @@ class ApiClient {
   async deleteComment(id: number): Promise<boolean> {
     console.log(`[API] Deleting comment with id: ${id}`);
     try {
-      const response = await this.client.delete<boolean>(`/api/comments/${id}`);
+      const response = await this.client.delete<boolean>(`/comments/${id}`);
       console.log('[API] Comment deleted successfully');
       return response.data;
     } catch (error) {
@@ -625,11 +908,17 @@ class ApiClient {
         formData.append('commentId', commentId.toString());
       }
       
-      const response = await this.client.post<{ url: string }>('/api/upload', formData, {
+      const response = await this.client.post<FileUploadResponse>('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      
+      // Validate the response has the expected URL field
+      if (!response.data || typeof response.data.url !== 'string') {
+        console.error('[API] Invalid file upload response:', response.data);
+        throw new Error('Invalid response from file upload endpoint');
+      }
       
       console.log('[API] File uploaded successfully:', response.data.url);
       return response.data.url;

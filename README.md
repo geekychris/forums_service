@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="Forums Service logo" width="180">
+</p>
+
 # Forum Application
 
 A Spring Boot application for managing forums, posts, and comments with nested structures and content attachments.
